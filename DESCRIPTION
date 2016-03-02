@@ -15,7 +15,7 @@ Description: This packages is designed for reading and compilation of data
     synchronized (which is typical if manually setting them), and options exist for
     rounding every Hour, Two Hours and 10 Minutes.
 Depends:
-    R (>= 3.2.3)
+    R (>= 2.15)
 Imports:
     gtools,
     zoo,
