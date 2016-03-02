@@ -1,5 +1,7 @@
 # iButtonDataOrganizer
 
+## Installation and General Usage
+
 This package is designed to facilitate processing and organization of datafiles from iButton temperature dataloggers. To install the package, you will need the *devtools* R package, which can be installed using `install.packages("devtools")`. Then, follow the example below for installation.
 
 ```
@@ -14,4 +16,4 @@ There are four main functions currently in the package - brief descriptions of t
   * `JoiniButtonDatasets()` - which joins multiple sets of data created using the `ReadiButtonFolder()`; and
   * `temp.agg.daily()` - which calculates various statistics (e.g., mean, variance, etc.) by day, for a dataset created using `ReadiButtonFolder()`.
 
-This work is authored by [Mike Treglia](http://mltconsecol.github.io/), and has been funded through the by the NSF [Oklahoma EPSCoR program](http://www.okepscor.org/)(Grant No. IIA-1301789).
+*This work is authored by [Mike Treglia](http://mltconsecol.github.io/), and has been funded through the by the NSF [Oklahoma EPSCoR program](http://www.okepscor.org/)(Grant No. IIA-1301789).*
