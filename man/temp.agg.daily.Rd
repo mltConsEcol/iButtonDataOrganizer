@@ -2,7 +2,7 @@
 % Please edit documentation in R/DailyStats.R
 \name{temp.agg.daily}
 \alias{temp.agg.daily}
-\title{Calcualte Temperature Statistics by Day}
+\title{Calculate Temperature Statistics by Day}
 \usage{
 temp.agg.daily(dataname, stat)
 }

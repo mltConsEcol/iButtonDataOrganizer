@@ -1,5 +1,5 @@
 ############################################################
-#' Calcualte Temperature Statistics by Day
+#' Calculate Temperature Statistics by Day
 #'
 #' Calculate various statistics from iButton datasets, by day.
 #'
