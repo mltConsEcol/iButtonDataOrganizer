@@ -26,8 +26,8 @@
 #'     # write.csv(as.data.frame(JulOct2014), "JulOct2014.csv")
 
 ReadiButtonFolder <- function(path=path, rounding=rounding, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime=FALSE){
-  library(zoo)
-  library(xts)
+  #library(zoo)
+  #library(xts)
 
   if(missing(path) | is.character(path)==FALSE)(stop("Make sure that the folder path is specified correctly"))
 
@@ -157,8 +157,8 @@ return(AllTempDataDF)
 
 ReadiButtonFile <- function(path, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime=FALSE){
 
-	library(zoo)
-	library(xts)
+	#library(zoo)
+	#library(xts)
 
 	if(missing(path) | is.character(path)==FALSE)(stop("Make sure that the folder path/file name is specified correctly"))
 
@@ -215,7 +215,7 @@ ReadiButtonFile <- function(path, StartDate, EndDate, DailyStartTime, DailyEndTi
 #'     CompilediButtonData <- JoiniButtonDatasets(iButtonDatasets)
 
 JoiniButtonDatasets <- function(datalist){
-library(gtools)
+#library(gtools)
   for(i in 1:length(datalist)){
     datalist[[i]] <- data.frame(Date=as.character(time(datalist[[i]])), datalist[[i]], check.names=FALSE, row.names=NULL)
   }

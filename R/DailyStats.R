@@ -21,8 +21,8 @@
 
 #Dataname should be an xts object; stat can be any of the following: var, mean, max, min, sd, or in format of: "function(x) var(x)"
 temp.agg.daily <- function(dataname, stat){
-  library(xts)
-  library(zoo)
+# library(xts)
+# library(zoo)
 	agg <- as.list(rep("", ncol(dataname)))
 	for (i in 1:ncol(dataname))
 		{
