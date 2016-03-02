@@ -1,0 +1,27 @@
+Package: iButtonDataOrganizer
+Title: iButton Data Organizer
+Version: 0.0.0.9000
+Authors@R: person("Michael", "Treglia", email = "mtreglia@gmail.com", role = c("aut", "cre"))
+Description: This packages is designed for reading and compilation of data
+    output from thermal dataloggers, iButtons. For various purposes, iButton users
+    may have sets of data loggers in deployed, which may be are periodically swapped
+    out. From each iButton, we can download a .csv file of the data, containing
+    header information, and subsequent rows containing date/time and temperature
+    data. The functions herein will load temperature from multiple iButtons from
+    within a folder into a single data object (ReadiButtonFolder), load data
+    from a single file if desired, and join multiple, multi-logger datasets (from
+    ReadiButtonFolder) that span different temporal ranges. The functions that
+    import entire folders of iButton data assume loggers may not be entirely
+    synchronized (which is typical if manually setting them), and options exist for
+    rounding every Hour, Two Hours and 10 Minutes.
+Depends:
+    R (>= 3.2.3)
+Imports:
+    gtools,
+    zoo,
+    xts
+Suggests:
+    ggplot2
+License: GPL-3
+LazyData: true
+RoxygenNote: 5.0.1
