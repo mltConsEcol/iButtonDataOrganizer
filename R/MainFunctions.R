@@ -5,7 +5,7 @@
 #'
 #' @export
 #' @param path Desired folder
-#' @param rounding Desired Rounding (options: '10min', '15min', '1hr', '2hrs')
+#' @param rounding Desired Rounding (options: '1min', '10min', '15min', '30min', '1hr', '2hrs')
 #' @param StartDate First desired date (and time) of the dataset (in format 'YYYY-MM-DD' or 'YYY-MM-DD HH:MM:SS' (in 24 hour time))
 #' @param EndDate Last desired date (and time) of the dataset (in format 'YYYY-MM-DD' or 'YYY-MM-DD HH:MM:SS' (in 24 hour time))
 #' @param DailyStartTime If only a portion of the day is desired, the start daily start time (in format 'HH:MM:SS' (in 24 hour time))
@@ -27,12 +27,10 @@
 #'     # write.csv(as.data.frame(JulOct2014), "JulOct2014.csv")
 
 ReadiButtonFolder <- function(path=path, rounding=rounding, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime=FALSE, hdlen=14){
-  #library(zoo)
-  #library(xts)
   
   if(missing(path) | is.character(path)==FALSE)(stop("Make sure that the folder path is specified correctly"))
   
-  if(rounding != "10min" & rounding != "15min" & rounding != "1hr" & rounding != "2hrs" & !missing(rounding))(stop("Rounding arguments can only be '10min', '1hr', or '2hrs'"))
+  if(rounding != "1min" & rounding != "10min" & rounding != "15min" & rounding != '30min' & rounding != "1hr" & rounding != "2hrs" & !missing(rounding))(stop("Rounding arguments can only be '10min', '1hr', or '2hrs'"))
   
   AllTempData <- lapply(list.files(path=path, pattern='*.csv', full.names=TRUE), read.csv, skip=hdlen) #Import all temperature files in path
   
@@ -46,7 +44,17 @@ ReadiButtonFolder <- function(path=path, rounding=rounding, StartDate, EndDate, 
   tryCatch({
     ##############
     #For Rounding
-    if(rounding=="10min"){
+	if(rounding=="1min"){
+	for(i in 1:length(AllTempData)){
+        for (j in 1:nrow(AllTempData[[i]])){
+			if(as.POSIXlt(AllTempData[[i]]$Time[j])$sec <30){
+			AllTempData[[i]]$Time[j] <- t1 - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
+			}else if (as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30) {
+			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + (60- as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
+			}
+		}
+	}
+	else if(rounding=="10min"){
       for(i in 1:length(AllTempData)){
         for (j in 1:nrow(AllTempData[[i]])){
           if(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 10){
@@ -95,6 +103,23 @@ ReadiButtonFolder <- function(path=path, rounding=rounding, StartDate, EndDate, 
         }
       }
     }
+	else if (rounding=="30min"){
+	for(i in 1:length(AllTempData)){
+		for (j in 1:nrow(AllTempData[[i]])){
+			if(as.POSIXlt(AllTempData[[i]]$Time[j])$min < 15){
+			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
+			} else if
+			#Round to 30
+			(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 15 & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 30){
+			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((30*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
+			((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 30) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min < 45)){
+			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (30*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
+			#Round to upper hour
+			((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 45)){
+			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((60*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
+			}
+		}
+	}
     else if (rounding=="2hrs"){
       for(i in 1:length(AllTempData)){
         if(as.POSIXlt(AllTempData[[i]]$Time[[nrow(AllTempData[[i]])-24]])$hour %% 2 != 0) #Looks at 4 days before last row for odd/even times; this avoids problems driven by different start dates when one is pre-daylight savings time.
