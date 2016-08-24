@@ -26,157 +26,160 @@
 #'     ## Users can write output to CSV file a CSV file with Date in the first column:
 #'     # write.csv(as.data.frame(JulOct2014), "JulOct2014.csv")
 
-ReadiButtonFolder <- function(path=path, rounding=rounding, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime=FALSE, hdlen=14){
-  
-  if(missing(path) | is.character(path)==FALSE)(stop("Make sure that the folder path is specified correctly"))
-  
-  if(rounding != "1min" & rounding != "10min" & rounding != "15min" & rounding != '30min' & rounding != "1hr" & rounding != "2hrs" & !missing(rounding))(stop("Rounding arguments can only be '10min', '1hr', or '2hrs'"))
-  
-  AllTempData <- lapply(list.files(path=path, pattern='*.csv', full.names=TRUE), read.csv, skip=hdlen) #Import all temperature files in path
-  
-  AllTempData <-  lapply(AllTempData, function(AllTempData) {
-    if(exceltime==TRUE){
-      AllTempData$Time <- as.POSIXct(strptime(as.character(paste(AllTempData[,1])), format="%m/%d/%Y\ %R", tz=""))
-    } else 	AllTempData$Time <- as.POSIXct(strptime(as.character(paste(AllTempData[,1])), format="%m/%d/%y\ %I:%M:%S\ %p", tz=""))
-    AllTempData <- AllTempData[,3:4]
-  })
-  
-  tryCatch({
-    ##############
-    #For Rounding
-	if(rounding=="1min"){
-	for(i in 1:length(AllTempData)){
-        for (j in 1:nrow(AllTempData[[i]])){
-			if(as.POSIXlt(AllTempData[[i]]$Time[j])$sec <30){
-			AllTempData[[i]]$Time[j] <- t1 - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
-			}else if (as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30) {
-			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + (60- as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
-			}
-		}
-	}
-	else if(rounding=="10min"){
-      for(i in 1:length(AllTempData)){
-        for (j in 1:nrow(AllTempData[[i]])){
-          if(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 10){
-            if((as.POSIXlt(AllTempData[[i]]$Time[j])$min/5) %% 1 == 0){
-              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + 60
-              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) + (60*signif(as.POSIXlt(AllTempData[[i]]$Time[j])$min,1)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
-            }
-            else #if((as.POSIXlt(AllTempData[[i]]$Time[j])$min/5) %% 1 != 0)
-            {
-              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) + (60*signif((as.POSIXlt(AllTempData[[i]]$Time[j])$min),1)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
-            }
-          }
-          else if(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 5 & as.POSIXlt(AllTempData[[i]]$Time[j])$min <10){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min)+(60*10)-(as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
-          }
-          else if(as.POSIXlt(AllTempData[[i]]$Time[j])$min <5){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min)-(as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
-          }
-        }
-      }
-    }
-    else if (rounding =="15min"){
-      for(i in 1:length(AllTempData)){
-        for (j in 1:nrow(AllTempData[[i]])){
-          if(as.POSIXlt(AllTempData[[i]]$Time[j])$min <= 7 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
-          } else if
-          #Round to 15
-          (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 7 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 8))  & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 15){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((15*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else  if 
-          ((as.POSIXlt(AllTempData[[i]]$Time[j])$min > 15) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min < 22 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30)){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (15*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
-          #Round to 30
-          (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 22 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 23))  & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 30){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((30*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
-          ((as.POSIXlt(AllTempData[[i]]$Time[j])$min > 30) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min <= 37 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30)){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (30*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
-          #Round to 45
-          (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 37 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 38))  & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 45){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((45*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
-          ((as.POSIXlt(AllTempData[[i]]$Time[j])$min > 45) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min <= 52 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30)){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (45*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
-          #Round to upper hour
-          (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 52 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 53))){
-            AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((60*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
-        }
-      }
-    }
-	else if (rounding=="30min"){
-	for(i in 1:length(AllTempData)){
-		for (j in 1:nrow(AllTempData[[i]])){
-			if(as.POSIXlt(AllTempData[[i]]$Time[j])$min < 15){
-			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
-			} else if
-			#Round to 30
-			(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 15 & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 30){
-			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((30*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
-			((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 30) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min < 45)){
-			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (30*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if 
-			#Round to upper hour
-			((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 45)){
-			AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((60*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
-			}
-		}
-	}
-    else if (rounding=="2hrs"){
-      for(i in 1:length(AllTempData)){
-        if(as.POSIXlt(AllTempData[[i]]$Time[[nrow(AllTempData[[i]])-24]])$hour %% 2 != 0) #Looks at 4 days before last row for odd/even times; this avoids problems driven by different start dates when one is pre-daylight savings time.
-        {
-          AllTempData[[i]]$Time <- AllTempData[[i]]$Time + 3600 - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
-        }
-        else{
-          AllTempData[[i]]$Time <- AllTempData[[i]]$Time - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
-        }
-      }}
-    else if (rounding=="1hr"){
-      for(i in 1:length(AllTempData)){
-        if(as.POSIXlt(AllTempData[[i]]$Time[[nrow(AllTempData[[i]])]])$min >= 30) #Looks at 4 days before last row for odd/even times; this avoids problems driven by different start dates when one is pre-daylight savings time.
-        {
-          AllTempData[[i]]$Time <- AllTempData[[i]]$Time + 3600 - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
-        }
-        else{
-          AllTempData[[i]]$Time <- AllTempData[[i]]$Time - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
-        }
-      }}
-    ##Adding code for having aligned data [collected at same time]
-    #else if (missing(rounding)){
-    #AllTempData <- AllTempData
-    #}
-  } ,
-  error=function(cond){
-    message("An error occurred. Check that all files in the specified folder are formatted correctly, simply as .csv files downloaded from iButtons")
-    message("Here's the original error message:")
-    message(cond)
-  })
-  
-  
-  ######
-  #Convert AllTempData to zoo object, then to xts object, then subset it by the DateRange and Time range if needed
-  AllTempData <-  lapply(AllTempData, function(AllTempData) {
-    AllTempData <- zoo::read.zoo(AllTempData, index.column=2, sep = "\t", header=TRUE, format="%Y-%m-%d %H:%M:%S", FUN=as.POSIXct)
-    AllTempData <- xts::as.xts(AllTempData)
-    AllTempData <- AllTempData[paste(StartDate,"/",EndDate, sep="")]
-  })
-  
-  if (missing(DailyStartTime) & missing(DailyEndTime)){  #DailyStartTime, DailyEndTime
-    AllTempData <- AllTempData
-  } else if (missing(DailyStartTime) | missing(DailyEndTime)){
-    stop("If specifying daily time frames, must provide start and end times")
-  } else{
-    AllTempData <- lapply(AllTempData, function(AllTempData){
-      AllTempData <- AllTempData[paste("T",DailyStartTime,"/","T",DailyEndTime, sep="")]
+ReadiButtonFolder <-
+  function(path = path, rounding = rounding, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime =
+             FALSE, hdlen = 14) {
+    if (missing(path) |
+        is.character(path) == FALSE)
+      (stop("Make sure that the folder path is specified correctly"))
+
+    if(rounding != "1min" & rounding != "10min" & rounding != "15min" & rounding != '30min' & rounding != "1hr" & rounding != "2hrs" & !missing(rounding))(stop("Rounding arguments can only be '10min', '1hr', or '2hrs'"))
+
+    AllTempData <- lapply(list.files(path=path, pattern='*.csv', full.names=TRUE), read.csv, skip=hdlen) #Import all temperature files in path
+
+    AllTempData <-  lapply(AllTempData, function(AllTempData) {
+      if(exceltime==TRUE){
+        AllTempData$Time <- as.POSIXct(strptime(as.character(paste(AllTempData[,1])), format="%m/%d/%Y\ %R", tz=""))
+      } else 	AllTempData$Time <- as.POSIXct(strptime(as.character(paste(AllTempData[,1])), format="%m/%d/%y\ %I:%M:%S\ %p", tz=""))
+      AllTempData <- AllTempData[,3:4]
     })
+
+    tryCatch({
+      ##############
+      #For Rounding
+      if(rounding=="1min"){
+        for(i in 1:length(AllTempData)){
+          for (j in 1:nrow(AllTempData[[i]])){
+            if(as.POSIXlt(AllTempData[[i]]$Time[j])$sec <30){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
+            }else if (as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30) {
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + (60- as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
+          }
+        }
+      }
+      else if(rounding=="10min"){
+        for(i in 1:length(AllTempData)){
+          for (j in 1:nrow(AllTempData[[i]])){
+            if(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 10){
+              if((as.POSIXlt(AllTempData[[i]]$Time[j])$min/5) %% 1 == 0){
+                AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + 60
+                AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) + (60*signif(as.POSIXlt(AllTempData[[i]]$Time[j])$min,1)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
+              }
+              else #if((as.POSIXlt(AllTempData[[i]]$Time[j])$min/5) %% 1 != 0)
+              {
+                AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) + (60*signif((as.POSIXlt(AllTempData[[i]]$Time[j])$min),1)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
+              }
+            }
+            else if(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 5 & as.POSIXlt(AllTempData[[i]]$Time[j])$min <10){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min)+(60*10)-(as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
+            }
+            else if(as.POSIXlt(AllTempData[[i]]$Time[j])$min <5){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min)-(as.POSIXlt(AllTempData[[i]]$Time[j])$sec)
+            }
+          }
+        }
+      }
+      else if (rounding =="15min"){
+        for(i in 1:length(AllTempData)){
+          for (j in 1:nrow(AllTempData[[i]])){
+            if(as.POSIXlt(AllTempData[[i]]$Time[j])$min <= 7 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
+            } else if
+            #Round to 15
+            (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 7 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 8))  & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 15){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((15*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else  if
+            ((as.POSIXlt(AllTempData[[i]]$Time[j])$min > 15) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min < 22 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30)){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (15*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            #Round to 30
+            (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 22 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 23))  & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 30){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((30*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            ((as.POSIXlt(AllTempData[[i]]$Time[j])$min > 30) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min <= 37 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30)){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (30*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            #Round to 45
+            (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 37 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 38))  & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 45){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((45*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            ((as.POSIXlt(AllTempData[[i]]$Time[j])$min > 45) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min <= 52 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec < 30)){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (45*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            #Round to upper hour
+            (((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 52 & as.POSIXlt(AllTempData[[i]]$Time[j])$sec >= 30)|(as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 53))){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((60*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
+          }
+        }
+      }
+      else if (rounding=="30min"){
+        for(i in 1:length(AllTempData)){
+          for (j in 1:nrow(AllTempData[[i]])){
+            if(as.POSIXlt(AllTempData[[i]]$Time[j])$min < 15){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - as.POSIXlt(AllTempData[[i]]$Time[j])$sec
+            } else if
+            #Round to 30
+            (as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 15 & as.POSIXlt(AllTempData[[i]]$Time[j])$min < 30){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((30*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            ((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 30) & (as.POSIXlt(AllTempData[[i]]$Time[j])$min < 45)){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] - (60*as.POSIXlt(AllTempData[[i]]$Time[j])$min - (30*60)) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)} else if
+            #Round to upper hour
+            ((as.POSIXlt(AllTempData[[i]]$Time[j])$min >= 45)){
+              AllTempData[[i]]$Time[j] <- AllTempData[[i]]$Time[j] + ((60*60) - 60*as.POSIXlt(AllTempData[[i]]$Time[j])$min) - (as.POSIXlt(AllTempData[[i]]$Time[j])$sec)}
+          }
+        }
+      }
+      else if (rounding=="2hrs"){
+        for(i in 1:length(AllTempData)){
+          if(as.POSIXlt(AllTempData[[i]]$Time[[nrow(AllTempData[[i]])-24]])$hour %% 2 != 0) #Looks at 4 days before last row for odd/even times; this avoids problems driven by different start dates when one is pre-daylight savings time.
+          {
+            AllTempData[[i]]$Time <- AllTempData[[i]]$Time + 3600 - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
+          }
+          else{
+            AllTempData[[i]]$Time <- AllTempData[[i]]$Time - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
+          }
+        }}
+      else if (rounding=="1hr"){
+        for(i in 1:length(AllTempData)){
+          if(as.POSIXlt(AllTempData[[i]]$Time[[nrow(AllTempData[[i]])]])$min >= 30) #Looks at 4 days before last row for odd/even times; this avoids problems driven by different start dates when one is pre-daylight savings time.
+          {
+            AllTempData[[i]]$Time <- AllTempData[[i]]$Time + 3600 - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
+          }
+          else{
+            AllTempData[[i]]$Time <- AllTempData[[i]]$Time - (as.POSIXlt(AllTempData[[i]]$Time)$min*60) - (as.POSIXlt(AllTempData[[i]]$Time)$sec)
+          }
+        }}
+      ##Adding code for having aligned data [collected at same time]
+      #else if (missing(rounding)){
+      #AllTempData <- AllTempData
+      #}
+    } ,
+    error=function(cond){
+      message("An error occurred. Check that all files in the specified folder are formatted correctly, simply as .csv files downloaded from iButtons")
+      message("Here's the original error message:")
+      message(cond)
+    })
+
+
+    ######
+    #Convert AllTempData to zoo object, then to xts object, then subset it by the DateRange and Time range if needed
+    AllTempData <-  lapply(AllTempData, function(AllTempData) {
+      AllTempData <- zoo::read.zoo(AllTempData, index.column=2, sep = "\t", header=TRUE, format="%Y-%m-%d %H:%M:%S", FUN=as.POSIXct)
+      AllTempData <- xts::as.xts(AllTempData)
+      AllTempData <- AllTempData[paste(StartDate,"/",EndDate, sep="")]
+    })
+
+    if (missing(DailyStartTime) & missing(DailyEndTime)){  #DailyStartTime, DailyEndTime
+      AllTempData <- AllTempData
+    } else if (missing(DailyStartTime) | missing(DailyEndTime)){
+      stop("If specifying daily time frames, must provide start and end times")
+    } else{
+      AllTempData <- lapply(AllTempData, function(AllTempData){
+        AllTempData <- AllTempData[paste("T",DailyStartTime,"/","T",DailyEndTime, sep="")]
+      })
+    }
+
+    AllTempDataDF <- na.omit(do.call(cbind, lapply(AllTempData, zoo::as.zoo)))
+
+    filenames <- sub("([^.]+)\\.[[:alnum:]]+$", "\\1", list.files(path=path,pattern='*.csv'))
+    colnames(AllTempDataDF) <- paste(filenames)
+
+    return(AllTempDataDF)
   }
-  
-  AllTempDataDF <- na.omit(do.call(cbind, lapply(AllTempData, zoo::as.zoo)))
-  
-  filenames <- sub("([^.]+)\\.[[:alnum:]]+$", "\\1", list.files(path=path,pattern='*.csv'))
-  colnames(AllTempDataDF) <- paste(filenames)
-  
-  return(AllTempDataDF)
-}
 
 
 ############################################################
@@ -209,38 +212,41 @@ ReadiButtonFolder <- function(path=path, rounding=rounding, StartDate, EndDate, 
 #'	   site2logger1_excel <- ReadiButtonFile(pathToFile, exceltime=TRUE)
 #'
 
-ReadiButtonFile <- function(path, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime=FALSE, hdlen=14){
-  
-  #library(zoo)
-  #library(xts)
-  
-  if(missing(path) | is.character(path)==FALSE)(stop("Make sure that the folder path/file name is specified correctly"))
-  
-  iButtonData <- read.csv(path, skip=hdlen)
-  
-  if(exceltime==TRUE){
-    iButtonData$Time <- as.POSIXct(strptime(as.character(paste(iButtonData[,1])), format="%m/%d/%Y\ %R", tz=""))
-  } else iButtonData$Time <- as.POSIXct(strptime(as.character(paste(iButtonData[,1])), format="%m/%d/%y\ %I:%M:%S\ %p", tz=""))
-  iButtonData <- iButtonData[,3:4]
-  iButtonData <- zoo::read.zoo(iButtonData, index.column=2, sep = "\t", header=TRUE, format="%Y-%m-%d %H:%M:%S", FUN=as.POSIXct)
-  iButtonData <- xts::as.xts(iButtonData)
-  
-  if(hasArg(StartDate) | hasArg(EndDate)){
-    iButtonData <- iButtonData[paste(StartDate,"/",EndDate, sep="")]
+ReadiButtonFile <-
+  function(path, StartDate, EndDate, DailyStartTime, DailyEndTime, exceltime =
+             FALSE, hdlen = 14) {
+    #library(zoo)
+    #library(xts)
+
+    if (missing(path) |
+        is.character(path) == FALSE)
+      (stop("Make sure that the folder path/file name is specified correctly"))
+
+    iButtonData <- read.csv(path, skip=hdlen)
+
+    if(exceltime==TRUE){
+      iButtonData$Time <- as.POSIXct(strptime(as.character(paste(iButtonData[,1])), format="%m/%d/%Y\ %R", tz=""))
+    } else iButtonData$Time <- as.POSIXct(strptime(as.character(paste(iButtonData[,1])), format="%m/%d/%y\ %I:%M:%S\ %p", tz=""))
+    iButtonData <- iButtonData[,3:4]
+    iButtonData <- zoo::read.zoo(iButtonData, index.column=2, sep = "\t", header=TRUE, format="%Y-%m-%d %H:%M:%S", FUN=as.POSIXct)
+    iButtonData <- xts::as.xts(iButtonData)
+
+    if(hasArg(StartDate) | hasArg(EndDate)){
+      iButtonData <- iButtonData[paste(StartDate,"/",EndDate, sep="")]
+    }
+    if (missing(DailyStartTime) & missing(DailyEndTime)){  #DailyStartTime, DailyEndTime
+      iButtonData <- iButtonData
+    } else if (missing(DailyStartTime) | missing(DailyEndTime)){
+      stop("If specifying daily time frames, must provide start and end times")
+    } else{
+      iButtonData <- lapply(iButtonData, function(iButtonData){
+        iButtonData <- iButtonData[paste("T",DailyStartTime,"/","T",DailyEndTime, sep="")]
+      })
+    }
+
+    iButtonData <- zoo::as.zoo(iButtonData)
+
   }
-  if (missing(DailyStartTime) & missing(DailyEndTime)){  #DailyStartTime, DailyEndTime
-    iButtonData <- iButtonData
-  } else if (missing(DailyStartTime) | missing(DailyEndTime)){
-    stop("If specifying daily time frames, must provide start and end times")
-  } else{
-    iButtonData <- lapply(iButtonData, function(iButtonData){
-      iButtonData <- iButtonData[paste("T",DailyStartTime,"/","T",DailyEndTime, sep="")]
-    })
-  }
-  
-  iButtonData <- zoo::as.zoo(iButtonData)
-  
-}
 
 
 
@@ -268,12 +274,20 @@ ReadiButtonFile <- function(path, StartDate, EndDate, DailyStartTime, DailyEndTi
 #'
 #'     CompilediButtonData <- JoiniButtonDatasets(iButtonDatasets)
 
-JoiniButtonDatasets <- function(datalist){
-  for(i in 1:length(datalist)){
-    datalist[[i]] <- data.frame(Date=as.character(time(datalist[[i]])), datalist[[i]], check.names=FALSE, row.names=NULL)
+JoiniButtonDatasets <- function(datalist) {
+  for (i in 1:length(datalist)) {
+    datalist[[i]] <-
+      data.frame(
+        Date = as.character(time(datalist[[i]])), datalist[[i]], check.names = FALSE, row.names =
+          NULL
+      )
   }
   AllDat <- do.call(gtools::smartbind,datalist)
-  AllDat <- zoo::read.zoo(AllDat, index.column=1, sep = "\t", header=TRUE, format="%Y-%m-%d %H:%M:%S", FUN=as.POSIXct)
-  
+  AllDat <-
+    zoo::read.zoo(
+      AllDat, index.column = 1, sep = "\t", header = TRUE, format = "%Y-%m-%d %H:%M:%S", FUN =
+        as.POSIXct
+    )
+
   return(AllDat)
 }
