@@ -23,6 +23,6 @@ There are four main functions currently in the package - brief descriptions of t
 
 #### 24 August 2016:
 
-	* Agument 'hdlen' added to ReadiButtonFile() and ReadiButtonFolder(), which allows user to set the length of the header from the data files (default is 14 lines, which works with iButton model DS1921G)
-	* Added more rounding options for ReadiButtonFolder()
+* Agument 'hdlen' added to ReadiButtonFile() and ReadiButtonFolder(), which allows user to set the length of the header from the data files (default is 14 lines, which works with iButton model DS1921G)
+* Added more rounding options for ReadiButtonFolder()
 	
