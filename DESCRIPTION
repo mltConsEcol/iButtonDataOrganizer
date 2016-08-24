@@ -1,6 +1,6 @@
 Package: iButtonDataOrganizer
 Title: iButton Data Organizer
-Version: 0.0.0.9000
+Version: 0.0.0.9001
 Authors@R: person("Michael", "Treglia", email = "mtreglia@gmail.com", role = c("aut", "cre"))
 Description: This packages is designed for reading and compilation of data
     output from thermal dataloggers, iButtons. For various purposes, iButton users
@@ -13,7 +13,7 @@ Description: This packages is designed for reading and compilation of data
     ReadiButtonFolder) that span different temporal ranges. The functions that
     import entire folders of iButton data assume loggers may not be entirely
     synchronized (which is typical if manually setting them), and options exist for
-    rounding every Hour, Two Hours and 10 Minutes.
+    rounding to nearest 1 minute, 10 min, 15 min, 30 min, 1 hr, and 2 hrs.
 Depends:
     R (>= 2.15)
 Imports:
