@@ -5,12 +5,12 @@
 \title{Read Temperature Data Files from Folder}
 \usage{
 ReadiButtonFolder(path = path, rounding = rounding, StartDate, EndDate,
-  DailyStartTime, DailyEndTime, exceltime = FALSE)
+  DailyStartTime, DailyEndTime, exceltime = FALSE, hdlen = 14)
 }
 \arguments{
 \item{path}{Desired folder}
 
-\item{rounding}{Desired Rounding (options: '10min', '1hr', '2hrs')}
+\item{rounding}{Desired Rounding (options: '1min', '10min', '15min', '30min', '1hr', '2hrs')}
 
 \item{StartDate}{First desired date (and time) of the dataset (in format 'YYYY-MM-DD' or 'YYY-MM-DD HH:MM:SS' (in 24 hour time))}
 
@@ -21,6 +21,8 @@ ReadiButtonFolder(path = path, rounding = rounding, StartDate, EndDate,
 \item{DailyEndTime}{If only a portion of the day is desired, the start daily end time (in format 'HH:MM:SS' (in 24 hour time))}
 
 \item{exceltime}{Indicates whether function should read the date and time stamp as formatted when an iButton file is saved in Microsoft Excel, as it changes the format. Default is FALSE.}
+
+\item{hdlen}{Specifies the length of the header, as not all iButton data files have same header length. For example, model DS1921G has a header of 14 lines (which is the default for the function), while DS1922L has a header of 19 lines. This can be determined by opening an iButton data file in a text editor and counting how many lines are before the column names for the data.}
 }
 \value{
 zoo object.
