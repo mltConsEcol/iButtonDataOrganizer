@@ -17,3 +17,12 @@ There are four main functions currently in the package - brief descriptions of t
   * `temp.agg.daily()` - which calculates various statistics (e.g., mean, variance, etc.) by day, for a dataset created using `ReadiButtonFolder()`.
 
 *This work is authored by [Mike Treglia](http://mltconsecol.github.io/). Initial development was been funded by the the [NSF Oklahoma EPSCoR program](http://www.okepscor.org/) (Grant No. IIA-1301789).*
+
+
+### Update Notes
+
+#### 24 August 2016:
+
+	* Agument 'hdlen' added to ReadiButtonFile() and ReadiButtonFolder(), which allows user to set the length of the header from the data files (default is 14 lines, which works with iButton model DS1921G)
+	* Added more rounding options for ReadiButtonFolder()
+	
