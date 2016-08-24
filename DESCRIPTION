@@ -17,6 +17,7 @@ Description: This packages is designed for reading and compilation of data
 Depends:
     R (>= 2.15)
 Imports:
+	methods,
     gtools,
     zoo,
     xts
